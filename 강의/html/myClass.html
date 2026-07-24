@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>나의 강의 시간표</title>
+
+    <!-- 구글 폰트: Gowun Batang -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- 외부 CSS 파일 -->
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>🗓️ 나의 강의 시간표</h1>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>시간</th>
+                        <th>월요일</th>
+                        <th>화요일</th>
+                        <th>수요일</th>
+                        <th>목요일</th>
+                        <th>금요일</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <th>09:00 - 10:00</th>
+                        <td rowspan="3">Vue.js 웹 프레임워크 💻</td>
+                        <td rowspan="2">네트워크 보안 기초 🔒</td>
+                        <td rowspan="3">웹 시스템 설계 및 분석 🔨</td>
+                        <td>IT 트렌드 특강 💡</td>
+                        <td rowspan="3">자바스크립트 심화 실습 🚀</td>
+                    </tr>
+
+                    <tr>
+                        <th>10:00 - 11:00</th>
+                        <td rowspan="2">데이터베이스 SQL 실습 🗄️</td>
+                    </tr>
+
+                    <tr>
+                        <th>11:00 - 12:00</th>
+                        <td>알고리즘 문제 풀이 🧠</td>
+                    </tr>
+
+                    <tr class="lunch-row">
+                        <th>12:00 - 13:00</th>
+                        <td colspan="5">🍱 점심시간 🍱</td>
+                    </tr>
+
+                    <tr>
+                        <th>13:00 - 14:00</th>
+                        <td rowspan="4">UI/UX 디자인 표준 🎨</td>
+                        <td rowspan="2">리눅스 시스템 관리 🐧</td>
+                        <td rowspan="2">클라우드 AWS 기초 ☁️</td>
+                        <td rowspan="3">자료구조 📊</td>
+                        <td>개인 프로젝트 🚀</td>
+                    </tr>
+
+                    <tr>
+                        <th>14:00 - 15:00</th>
+                        <td rowspan="3">오픈소스 소프트웨어 🔓</td>
+                    </tr>
+
+                    <tr>
+                        <th>15:00 - 16:00</th>
+                        <td rowspan="3">Git &amp; GitHub 버전 관리 🐙</td>
+                        <td rowspan="3">인공지능 머신러닝 기초 💻</td>
+                    </tr>
+
+                    <tr>
+                        <th>16:00 - 17:00</th>
+                        <td rowspan="2">빅데이터 분석 실무 📈</td>
+                    </tr>
+
+                    <tr>
+                        <th>17:00 - 18:00</th>
+                        <td>취업·창업 특강 💼</td>
+                        <td>주간 회고 ✍🏻</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
