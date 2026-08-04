@@ -1,6 +1,9 @@
+
 <script setup>
-import WeatherMockup from './components/practices/basic/WeatherMockup/WeatherVer1.vue/index.js'
+import WeatherParent from './components/practices/WeatherMockup/WeatherVer3/WeatherParent.vue'
 </script>
+
 <template>
-  <WeatherMockup />
+  <WeatherParent />
 </template>
+
