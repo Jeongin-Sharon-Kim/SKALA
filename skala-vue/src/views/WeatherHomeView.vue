@@ -3,6 +3,7 @@
     <script setup>
     import { ref, computed, watch, watchEffect } from 'vue'
     import { useRouter } from 'vue-router'
+    import { fetchWeatherByCity } from '@/services/weatherApi.js'
 
     import SearchBar from '../components/exercise/SearchBar.vue'
     import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
@@ -16,6 +17,12 @@
 
     // 현재 선택된 도시 정보
     const selectedCityInfo = ref(null)
+
+    // API 요청 중인지 확인
+    const isLoading = ref(false)
+
+    // API 오류 메시지
+    const errorMessage = ref('')
 
     // 날씨 데이터 배열
     const weatherList = ref([
@@ -39,16 +46,67 @@
     },
     ])
 
-    // 검색어가 포함된 도시만 반환
+    // API에서 검색된 날씨 목록 반환
     const filteredWeatherList = computed(() => {
-    return weatherList.value.filter((weather) =>
-        weather.name.includes(searchQuery.value.trim())
-    )
+    return weatherList.value
     })
 
     // SearchBar에서 전달받은 검색어 저장
     const updateSearchQuery = (newQuery) => {
     searchQuery.value = newQuery
+    }
+
+    // 도시 이름으로 실제 날씨 검색
+    const searchWeather = async () => {
+    const cityName = searchQuery.value.trim()
+
+    // 빈 검색어 검사
+    if (!cityName) {
+        errorMessage.value = '도시 이름을 입력해주세요.'
+        return
+    }
+
+    isLoading.value = true
+    errorMessage.value = ''
+
+    try {
+        // OpenWeather API 호출
+        const data = await fetchWeatherByCity(cityName)
+
+        console.log('API 응답:', data)
+
+        // API 응답을 WeatherCard 형식으로 변환
+        const newWeather = {
+        id: String(data.id),
+
+        // 사용자가 한글로 입력했다면 한글 이름 유지
+        name: cityName,
+
+        temp: Math.round(data.main.temp),
+        status: data.weather[0].description,
+        humidity: data.main.humidity,
+        wind: data.wind.speed,
+        }
+
+        // 검색된 도시만 화면에 표시
+        weatherList.value = [newWeather]
+
+        // 이전 선택 상태 초기화
+        selectedCityInfo.value = null
+    } catch (error) {
+        console.error('날씨 API 요청 실패:', error)
+
+        if (error.response?.status === 404) {
+        errorMessage.value = '해당 도시를 찾을 수 없습니다.'
+        } else if (error.response?.status === 401) {
+        errorMessage.value =
+            'API 키가 올바르지 않거나 아직 활성화되지 않았습니다.'
+        } else {
+        errorMessage.value = '날씨 정보를 불러오지 못했습니다.'
+        }
+    } finally {
+        isLoading.value = false
+    }
     }
 
     // WeatherCard에서 전달받은 도시 정보 저장
@@ -73,14 +131,14 @@
     )
     })
 
-    // 처음 실행될 때와 검색어가 변경될 때 자동 실행
+    // 검색어와 날씨 목록 변경 시 실행
     watchEffect(() => {
     console.log(
-        `🤖 [watchEffect 자동 호출] 현재 검색어 '${searchQuery.value}'에 매칭되는 API 데이터를 필터링합니다.`
+        `🤖 [watchEffect 자동 호출] 현재 검색어: '${searchQuery.value}'`
     )
 
     console.log(
-        '검색 결과:',
+        '현재 날씨 목록:',
         filteredWeatherList.value.map((weather) => weather.name)
     )
     })
@@ -93,14 +151,30 @@
         <SearchBar
             :search-query="searchQuery"
             @update-query="updateSearchQuery"
+            @search-weather="searchWeather"
         />
+
+        <!-- API 요청 중 -->
+        <p
+            v-if="isLoading"
+            class="loading-message"
+        >
+            날씨 정보를 불러오는 중입니다.
+        </p>
+
+        <!-- API 오류 -->
+        <p
+            v-if="errorMessage"
+            class="error-message"
+        >
+            {{ errorMessage }}
+        </p>
         </BaseDashboardCard>
 
-        <!-- 지역별 날씨 영역 전체 -->
+        <!-- 지역별 날씨 영역 -->
         <BaseDashboardCard>
         <h3>🌆 지역별 날씨 현황</h3>
 
-        <!-- 도시 카드 목록 -->
         <div class="weather-list">
             <WeatherCard
             v-for="weather in filteredWeatherList"
@@ -111,12 +185,15 @@
             />
         </div>
 
-        <!-- 검색 결과가 없을 때 -->
+        <!-- 표시할 날씨가 없을 때 -->
         <p
-            v-if="filteredWeatherList.length === 0"
+            v-if="
+            !isLoading &&
+            filteredWeatherList.length === 0
+            "
             class="empty-message"
         >
-            검색 결과와 일치하는 도시가 없습니다.
+            표시할 날씨 정보가 없습니다.
         </p>
         </BaseDashboardCard>
 
@@ -166,5 +243,16 @@
     padding: 15px;
     color: #777;
     text-align: center;
+    }
+
+    .loading-message {
+    margin: 10px 0 0;
+    color: #2196f3;
+    }
+
+    .error-message {
+    margin: 10px 0 0;
+    color: #f44336;
+    font-weight: bold;
     }
     </style>
