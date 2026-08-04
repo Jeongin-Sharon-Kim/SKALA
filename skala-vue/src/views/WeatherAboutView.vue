@@ -56,7 +56,7 @@ import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 
 p,
     li {
-    line-height: 1.7;
+    line-height: 1.5;
     }
 
     ul {
@@ -75,7 +75,7 @@ p,
     .home-link {
     display: inline-block;
     margin-top: 10px;
-    padding: 9px 158px;
+    padding: 9px 150px;
     color: white;
     background-color: #2196f3;
     border-radius: 5px;

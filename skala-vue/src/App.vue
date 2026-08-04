@@ -1,30 +1,31 @@
-<!---
-<script setup>
-import WeatherHomeView from '../views/WeatherHomeView.vue/index.js'
-</script>
-
-<template>
-  <WeatherHo--> meView />
-
-
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import UnitToggler from './components/exercise/UnitToggler.vue'
+
 </script>
 
 <template>
   <div class="app">
     <header class="header">
-      <h1>🌤️ 과제 4: 라우터 활용</h1>
+      <h1>🌤️ 종합실습 5: 스토어 적용</h1>
 
-      <!-- 페이지 이동 메뉴 -->
-      <nav class="nav">
-        <RouterLink to="/">🌤️ 날씨 대시보드</RouterLink>
-        <RouterLink to="/about">📘 서비스 소개</RouterLink>
-      </nav>
+      <!-- 메뉴와 단위 변경 버튼을 같은 줄에 배치 -->
+      <div class="top-bar">
+        <nav class="nav">
+          <RouterLink to="/">
+            🌤️ 날씨 대시보드
+          </RouterLink>
+
+          <RouterLink to="/about">
+            ℹ️ 서비스 소개
+          </RouterLink>
+        </nav>
+
+        <UnitToggler />
+      </div>
     </header>
 
     <main class="main">
-      <!-- 현재 URL에 해당하는 페이지 표시 -->
       <RouterView />
     </main>
   </div>
@@ -41,8 +42,7 @@ body {
   min-width: 320px;
   background-color: #f4f7fb;
   color: #263238;
-  font-family:
-    Pretendard, Arial, sans-serif;
+  font-family: Pretendard, Arial, sans-serif;
 }
 
 button,
@@ -62,28 +62,40 @@ a {
 .app {
   width: 100%;
   min-height: 100vh;
+  background-color: rgb(251, 249, 209);
 }
 
+/* 제목과 메뉴 영역 */
 .header {
-  padding: 24px 20px 0;
-  text-align: center;
+  width: 500px;
+  margin: 25px auto 0;
 }
 
 .header h1 {
-  margin: 0 0 22px;
-  font-size: 28px;
+  margin: 0 0 15px;
+  font-size: 22px;
 }
 
-.nav {
+/* 메뉴와 단위 설정을 같은 줄에 배치 */
+.top-bar {
   display: flex;
-  justify-content: center;
-  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid #dce4ec;
 }
 
+/* 왼쪽 메뉴 */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 상세보기 */
 .nav a {
-  padding: 12px 18px;
+  padding: 10px 8px;
   color: #7b8794;
+  font-size: 13px;
   font-weight: 700;
   border-bottom: 3px solid transparent;
 }
@@ -94,8 +106,9 @@ a {
   border-bottom-color: #2196f3;
 }
 
+/* 현재 Router 페이지 */
 .main {
-  width: min(900px, calc(100% - 32px));
-  margin: 25px auto;
+  width: 550px;
+  margin: 15px auto 30px;
 }
 </style>

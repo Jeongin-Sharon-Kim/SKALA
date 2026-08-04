@@ -1,16 +1,17 @@
     <script setup>
     import { computed } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
+    import { useConfigStore } from '@/stores/configStore.js'
 
     import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 
-    // 현재 주소 정보
     const route = useRoute()
-
-    // 페이지 이동 기능
     const router = useRouter()
 
-    // 도시 상세 Mock Data
+    // Pinia 단위 설정 Store
+    const configStore = useConfigStore()
+
+    // 상세 페이지용 날씨 데이터
     const weatherList = [
     {
         id: 'city_01',
@@ -45,6 +46,24 @@
     )
     })
 
+    // 현재 단위 설정에 맞게 온도 계산
+    const displayTemp = computed(() => {
+    // 잘못된 도시 ID일 때 오류 방지
+    if (!selectedWeather.value) {
+        return ''
+    }
+
+    const rawTemp = selectedWeather.value.temp
+
+    // 화씨로 설정된 경우
+    if (configStore.unit === 'fahrenheit') {
+        return Math.round(rawTemp * 9 / 5 + 32)
+    }
+
+    // 섭씨일 때 원본 온도 반환
+    return rawTemp
+    })
+
     // 이전 페이지로 이동
     const goBack = () => {
     router.back()
@@ -53,28 +72,28 @@
 
     <template>
     <div class="detail-container">
-        <!-- 도시 정보가 있는 경우 -->
         <BaseDashboardCard v-if="selectedWeather">
-        <h2>
-        📊 지역별 상세 기상 관측 정보 
-        </h2>
+        <h2>📊 지역별 상세 기상 관측 정보</h2>
 
         <div class="detail-box">
             <p>
-            <span>📍 도시 </span>
+            <span>📍 도시</span>
             <strong>{{ selectedWeather.name }}</strong>
             </p>
 
             <p>
             <span>현재 온도</span>
-            <strong>{{ selectedWeather.temp }}℃</strong>
+
+            <!-- 변환된 온도와 현재 단위 기호 출력 -->
+            <strong>
+                {{ displayTemp }}{{ configStore.unitSymbol }}
+            </strong>
             </p>
 
             <p>
-            <span>기상 현황 </span>
+            <span>기상 현황</span>
             <strong>{{ selectedWeather.status }}</strong>
             </p>
-
 
             <p>
             <span>습도</span>
@@ -99,10 +118,6 @@
         <!-- 잘못된 도시 ID인 경우 -->
         <BaseDashboardCard v-else>
         <h2>도시 정보를 찾을 수 없습니다.</h2>
-
-        <p>
-            요청한 도시 ID와 일치하는 날씨 정보가 없습니다.
-        </p>
 
         <RouterLink
             class="home-link"
@@ -150,9 +165,9 @@
     .home-link {
     display: inline-block;
     margin-top: 18px;
-    padding: 9px 15px;
+    padding: 9px 14px;
     color: white;
-    background-color: #5db1ff;
+    background-color: #5faaf5;
     border: none;
     border-radius: 5px;
     text-decoration: none;

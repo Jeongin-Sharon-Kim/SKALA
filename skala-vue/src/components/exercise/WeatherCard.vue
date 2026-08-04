@@ -1,38 +1,62 @@
-//이벤트 모음
+    <script setup>
+    import { computed } from 'vue'
+    import { useConfigStore } from '@/stores/configStore.js'
 
-
-<script setup>
-const props = defineProps({
+    // 부모에게 날씨 정보 받기
+    const props = defineProps({
     weather: {
         type: Object,
         required: true,
     },
-})
+    })
 
-const emit = defineEmits(['select-card', 'click-detail'])
+    // 부모에게 전달할 이벤트
+    const emit = defineEmits([
+    'select-card',
+    'click-detail',
+    ])
 
-// 카드 클릭 이벤트를 부모에게 전달
-const selectCard = () => {
+    // Pinia Store 사용
+    const configStore = useConfigStore()
+
+    // 현재 단위에 맞는 온도 계산
+    const displayTemp = computed(() => {
+    const rawTemp = props.weather.temp
+
+    // 화씨일 때 변환
+    if (configStore.unit === 'fahrenheit') {
+        return Math.round(rawTemp * 9 / 5 + 32)
+    }
+
+    // 섭씨일 때 원본 반환
+    return rawTemp
+    })
+
+    // 카드 클릭 이벤트
+    const selectCard = () => {
     emit('select-card', props.weather)
-} 
+    }
 
-// 상세보기 이벤트를 부모에게 전달
-const clickDetail = () => {
+    // 상세보기 클릭 이벤트
+    const clickDetail = () => {
     emit('click-detail', props.weather)
-}
-</script>
+    }
+    </script>
 
     <template>
     <div
         class="weather-card"
         @click="selectCard"
     >
-        <div>
-        <strong>
+        <div class="weather-info">
+        <p class="city-name">
             {{ weather.name }} ({{ weather.status }})
-        </strong>
+        </p>
 
-        <p>현재 기온: {{ weather.temp }}℃</p>
+        <p class="temperature">
+            현재 기온:
+            {{ displayTemp }}{{ configStore.unitSymbol }}
+        </p>
 
         <span
             v-if="weather.temp >= 25"
@@ -49,30 +73,64 @@ const clickDetail = () => {
         </span>
         </div>
 
-        <!-- 카드 클릭 이벤트까지 실행되지 않도록 .stop 사용 -->
-        <button @click.stop="clickDetail">
+        <!-- 버튼 클릭 시 카드 클릭 이벤트는 실행하지 않음 -->
+        <button
+        type="button"
+        @click.stop="clickDetail"
+        >
         상세보기
         </button>
     </div>
     </template>
 
     <style scoped>
+    
     .weather-card {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    margin-bottom: 10px;
+    padding: 14px;
+
+    background-color: white;
+    border: 1px solid #dfe5eb;
+    border-radius: 6px;
+
     cursor: pointer;
+    }
+
+    .weather-card:last-child {
+    margin-bottom: 0;
+    }
+
+    .weather-card:last-child {
+    margin-bottom: 0;
     }
 
     .weather-card p {
     margin: 5px 0;
     }
 
+    .city-name {
+    font-weight: 600;
+    }
+
+    .temperature {
+    margin-bottom: 8px;
+    }
+
     .weather-card button {
     padding: 6px 12px;
-    border: 1px solid #343739;
+    background-color: rgb(202, 201, 201);
+    border: 1px solid #7a8085;
     border-radius: 4px;
     cursor: pointer;
+    }
+
+    .weather-card button:hover {
+    background-color: #f1f3f5;
     }
 
     .hot {
@@ -82,14 +140,14 @@ const clickDetail = () => {
     background-color: #ff6b6b;
     border-radius: 4px;
     font-size: 13px;
-}
+    }
 
-.cool {
+    .cool {
     display: inline-block;
     padding: 4px 8px;
     color: white;
     background-color: #74b9ff;
     border-radius: 4px;
     font-size: 13px;
-}
-</style>
+    }
+    </style>
