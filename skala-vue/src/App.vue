@@ -7,7 +7,7 @@ import UnitToggler from './components/exercise/UnitToggler.vue'
 <template>
   <div class="app">
     <header class="header">
-      <h1>🌤️ 종합실습 5: 스토어 적용</h1>
+      <h1>🌤️ 오늘의 날씨</h1>
 
       <!-- 메뉴와 단위 변경 버튼을 같은 줄에 배치 -->
       <div class="top-bar">

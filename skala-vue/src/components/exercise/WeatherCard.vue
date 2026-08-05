@@ -1,8 +1,15 @@
     <script setup>
     import { computed } from 'vue'
+    import {
+    Location,
+    View,
+    Sunny,
+    Pouring,
+    Cloudy,
+    } from '@element-plus/icons-vue'
+
     import { useConfigStore } from '@/stores/configStore.js'
 
-    // 부모에게 날씨 정보 받기
     const props = defineProps({
     weather: {
         type: Object,
@@ -10,144 +17,137 @@
     },
     })
 
-    // 부모에게 전달할 이벤트
     const emit = defineEmits([
     'select-card',
     'click-detail',
     ])
 
-    // Pinia Store 사용
     const configStore = useConfigStore()
 
-    // 현재 단위에 맞는 온도 계산
     const displayTemp = computed(() => {
-    const rawTemp = props.weather.temp
-
-    // 화씨일 때 변환
     if (configStore.unit === 'fahrenheit') {
-        return Math.round(rawTemp * 9 / 5 + 32)
+        return Math.round((props.weather.temp * 9) / 5 + 32)
     }
 
-    // 섭씨일 때 원본 반환
-    return rawTemp
+    return Math.round(props.weather.temp)
     })
 
-    // 카드 클릭 이벤트
-    const selectCard = () => {
-    emit('select-card', props.weather)
-    }
+    const unitSymbol = computed(() => {
+    return configStore.unit === 'fahrenheit' ? '°F' : '°C'
+    })
 
-    // 상세보기 클릭 이벤트
-    const clickDetail = () => {
-    emit('click-detail', props.weather)
-    }
+    const weatherIcon = computed(() => {
+    if (props.weather.status === '맑음') return Sunny
+    if (props.weather.status === '비') return Pouring
+    return Cloudy
+    })
+
+    const tagType = computed(() => {
+    if (props.weather.status === '맑음') return 'warning'
+    if (props.weather.status === '비') return 'primary'
+    return 'info'
+    })
     </script>
 
     <template>
-    <div
+    <el-card
         class="weather-card"
-        @click="selectCard"
+        shadow="hover"
+        @click="emit('select-card', weather)"
     >
-        <div class="weather-info">
-        <p class="city-name">
-            {{ weather.name }} ({{ weather.status }})
-        </p>
+        <div class="weather-card-top">
+        <div class="city-name">
+            <el-icon>
+            <Location />
+            </el-icon>
 
-        <p class="temperature">
-            현재 기온:
-            {{ displayTemp }}{{ configStore.unitSymbol }}
-        </p>
-
-        <span
-            v-if="weather.temp >= 25"
-            class="hot"
-        >
-            🔥 더움 (25도 이상)
-        </span>
-
-        <span
-            v-else
-            class="cool"
-        >
-            ❄️ 선선함 (25도 미만)
-        </span>
+            <span>{{ weather.name }}</span>
         </div>
 
-        <!-- 버튼 클릭 시 카드 클릭 이벤트는 실행하지 않음 -->
-        <button
-        type="button"
-        @click.stop="clickDetail"
+        <el-tag
+            :type="tagType"
+            effect="light"
+            round
+        >
+            {{ weather.status }}
+        </el-tag>
+        </div>
+
+        <div class="weather-main">
+        <el-icon class="weather-icon">
+            <component :is="weatherIcon" />
+        </el-icon>
+
+        <strong class="temperature">
+            {{ displayTemp }}{{ unitSymbol }}
+        </strong>
+        </div>
+
+        <el-divider />
+
+        <el-button
+        type="primary"
+        plain
+        round
+        :icon="View"
+        class="detail-button"
+        @click.stop="emit('click-detail', weather)"
         >
         상세보기
-        </button>
-    </div>
+        </el-button>
+
+
+    </el-card>
     </template>
 
     <style scoped>
-    
     .weather-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-
-    margin-bottom: 10px;
-    padding: 14px;
-
-    background-color: white;
-    border: 1px solid #dfe5eb;
-    border-radius: 6px;
-
+    border: none;
+    border-radius: 22px;
     cursor: pointer;
+    margin-bottom: 15px;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
     }
 
-    .weather-card:last-child {
-    margin-bottom: 0;
+    .weather-card:hover {
+    transform: translateY(-6px);
     }
 
-    .weather-card:last-child {
-    margin-bottom: 0;
-    }
-
-    .weather-card p {
-    margin: 5px 0;
+    .weather-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     }
 
     .city-name {
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 19px;
+    font-weight: 700;
+    }
+
+    .weather-main {
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    }
+
+    .weather-icon {
+    font-size: 62px;
+    color: #409eff;
     }
 
     .temperature {
-    margin-bottom: 8px;
+    font-size: 42px;
+    color: #303133;
     }
 
-    .weather-card button {
-    padding: 6px 12px;
-    background-color: rgb(202, 201, 201);
-    border: 1px solid #7a8085;
-    border-radius: 4px;
-    cursor: pointer;
-    }
-
-    .weather-card button:hover {
-    background-color: #f1f3f5;
-    }
-
-    .hot {
-    display: inline-block;
-    padding: 4px 8px;
-    color: white;
-    background-color: #ff6b6b;
-    border-radius: 4px;
-    font-size: 13px;
-    }
-
-    .cool {
-    display: inline-block;
-    padding: 4px 8px;
-    color: white;
-    background-color: #74b9ff;
-    border-radius: 4px;
-    font-size: 13px;
+    .detail-button {
+    width: 100%;
     }
     </style>

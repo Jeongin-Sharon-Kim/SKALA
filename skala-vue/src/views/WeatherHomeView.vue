@@ -4,6 +4,7 @@
     import { ref, computed, watch, watchEffect } from 'vue'
     import { useRouter } from 'vue-router'
     import { fetchWeatherByCity } from '@/services/weatherApi.js'
+    import { ElMessage } from 'element-plus'
 
     import SearchBar from '../components/exercise/SearchBar.vue'
     import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
@@ -56,21 +57,20 @@
     searchQuery.value = newQuery
     }
 
-    // 도시 이름으로 실제 날씨 검색
-    const searchWeather = async () => {
+
+    const handleSearchWeather = async () => {
     const cityName = searchQuery.value.trim()
 
     // 빈 검색어 검사
     if (!cityName) {
-        errorMessage.value = '도시 이름을 입력해주세요.'
+        ElMessage.warning('도시 이름을 입력해주세요.')
         return
     }
 
     isLoading.value = true
-    errorMessage.value = ''
 
     try {
-        // OpenWeather API 호출
+    // OpenWeather API 호출
         const data = await fetchWeatherByCity(cityName)
 
         console.log('API 응답:', data)
@@ -79,7 +79,7 @@
         const newWeather = {
         id: String(data.id),
 
-        // 사용자가 한글로 입력했다면 한글 이름 유지
+        // 사용자가 한글로 입력했다면 입력한 이름 유지
         name: cityName,
 
         temp: Math.round(data.main.temp),
@@ -93,21 +93,30 @@
 
         // 이전 선택 상태 초기화
         selectedCityInfo.value = null
+
+        // 검색 성공 메시지
+        ElMessage.success(`${cityName} 날씨를 불러왔습니다.`)
     } catch (error) {
         console.error('날씨 API 요청 실패:', error)
 
         if (error.response?.status === 404) {
-        errorMessage.value = '해당 도시를 찾을 수 없습니다.'
+        ElMessage.error('해당 도시를 찾을 수 없습니다.')
         } else if (error.response?.status === 401) {
-        errorMessage.value =
-            'API 키가 올바르지 않거나 아직 활성화되지 않았습니다.'
+        ElMessage.error(
+            'API 키가 올바르지 않거나 아직 활성화되지 않았습니다.',
+        )
         } else {
-        errorMessage.value = '날씨 정보를 불러오지 못했습니다.'
+        ElMessage.error('날씨 정보를 불러오지 못했습니다.')
         }
     } finally {
         isLoading.value = false
     }
-    }
+}
+
+
+
+
+
 
     // WeatherCard에서 전달받은 도시 정보 저장
     const selectCity = (weather) => {
@@ -144,6 +153,7 @@
     })
     </script>
 
+        
     <template>
     <div class="weather-container">
         <!-- 검색 영역 -->
@@ -151,50 +161,57 @@
         <SearchBar
             :search-query="searchQuery"
             @update-query="updateSearchQuery"
-            @search-weather="searchWeather"
+            @search-weather="handleSearchWeather"
         />
 
-        <!-- API 요청 중 -->
-        <p
-            v-if="isLoading"
-            class="loading-message"
-        >
-            날씨 정보를 불러오는 중입니다.
-        </p>
-
         <!-- API 오류 -->
-        <p
+        <el-alert
             v-if="errorMessage"
-            class="error-message"
-        >
-            {{ errorMessage }}
-        </p>
+            :title="errorMessage"
+            type="error"
+            show-icon
+            :closable="false"
+            class="error-alert"
+        />
         </BaseDashboardCard>
 
         <!-- 지역별 날씨 영역 -->
         <BaseDashboardCard>
         <h3>🌆 지역별 날씨 현황</h3>
 
-        <div class="weather-list">
-            <WeatherCard
+        <!-- API 요청 중 -->
+        <el-skeleton
+            v-if="isLoading"
+            :rows="5"
+            animated
+        />
+
+        <!-- 날씨 카드 목록 -->
+        <el-row
+            v-else-if="filteredWeatherList.length > 0"
+            :gutter="20"
+        >
+            <el-col
             v-for="weather in filteredWeatherList"
             :key="weather.id"
-            :weather="weather"
-            @select-card="selectCity"
-            @click-detail="showDetail"
+            :xs="24"
+            :sm="12"
+            :md="8"
+            class="weather-column"
+            >
+            <WeatherCard
+                :weather="weather"
+                @select-card="selectCity"
+                @click-detail="showDetail"
             />
-        </div>
+            </el-col>
+        </el-row>
 
         <!-- 표시할 날씨가 없을 때 -->
-        <p
-            v-if="
-            !isLoading &&
-            filteredWeatherList.length === 0
-            "
-            class="empty-message"
-        >
-            표시할 날씨 정보가 없습니다.
-        </p>
+        <el-empty
+            v-else
+            description="표시할 날씨 정보가 없습니다."
+        />
         </BaseDashboardCard>
 
         <!-- 선택된 도시 표시 -->
@@ -255,4 +272,15 @@
     color: #f44336;
     font-weight: bold;
     }
-    </style>
+
+    .error-alert {
+    margin-top: 10px;
+
+    .weather-column {
+    margin-bottom: 50px;
+}
+}
+
+
+
+</style>

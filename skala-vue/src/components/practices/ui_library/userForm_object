@@ -1,0 +1,20 @@
+const userForm = ref({
+email: ''
+,
+agree: false,
+})
+    
+const handleRegister = () => {
+if (!userForm.value.email.includes('@')) {
+ElMessage.error('❌ 올바른 이메일 형식이 아닙니다.')
+return
+}
+if (!userForm.value.agree) {
+ElMessage.warning('⚠️ 이용약관에 동의하셔야 합니다.')
+return
+}
+ElMessage.success('🎉 가입 신청이 정상적으로 완료되었습니다!')
+}
+
+const productQuantity = ref(1) // 수량 카운터 기본값
+const productRate = ref(4) // 별점 기본값 (별 4개)

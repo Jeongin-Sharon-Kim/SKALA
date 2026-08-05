@@ -1,24 +1,31 @@
     <script setup>
+    import { computed } from 'vue'
     import { useConfigStore } from '@/stores/configStore.js'
 
-    // 전역 날씨 단위 Store
     const configStore = useConfigStore()
+
+    const isFahrenheit = computed({
+    get() {
+        return configStore.unit === 'fahrenheit'
+    },
+
+    set(value) {
+        configStore.unit = value ? 'fahrenheit' : 'celsius'
+    },
+    })
     </script>
 
     <template>
     <div class="unit-toggler">
-        <span>
-        날씨단위:
-        {{ configStore.unit === 'celsius' ? '섭씨' : '화씨' }}
-        ({{ configStore.unitSymbol }})
-        </span>
+        <span>온도 단위</span>
 
-        <button
-        type="button"
-        @click="configStore.toggleUnit"
-        >
-        단위변경
-        </button>
+        <el-switch
+        v-model="isFahrenheit"
+        inline-prompt
+        active-text="°F"
+        inactive-text="°C"
+        size="large"
+        />
     </div>
     </template>
 
@@ -26,27 +33,15 @@
     .unit-toggler {
     display: flex;
     align-items: center;
-    gap: 7px;
-    white-space: nowrap;
+    gap: 20px;
+    padding: 5px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 6px 20px rgba(53, 94, 142, 0.1);
     }
 
     .unit-toggler span {
-    color: #546e7a;
-    font-size: 12px;
-    font-weight: 600;
-    }
-
-    .unit-toggler button {
-    padding: 5px 8px;
-    color: white;
-    font-size: 11px;
     font-weight: 700;
-    background-color: #455a64;
-    border: none;
-    border-radius: 4px;
-    }
-
-    .unit-toggler button:hover {
-    background-color: #37474f;
+    color: #606266;
     }
     </style>
