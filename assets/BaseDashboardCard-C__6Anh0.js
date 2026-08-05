@@ -1,0 +1,1 @@
+import{E as e,P as t,b as n,l as r,w as i,y as a}from"./index-Bb9B1_wg.js";var o={class:`base-card`},s={key:0,class:`card-title`},c=r({__name:`BaseDashboardCard`,props:{title:{type:String,default:``}},setup(r){return(c,l)=>(i(),n(`section`,o,[r.title?(i(),n(`h2`,s,t(r.title),1)):a(``,!0),e(c.$slots,`default`,{},void 0,!0)]))}},[[`__scopeId`,`data-v-86a31be6`]]);export{c as t};
