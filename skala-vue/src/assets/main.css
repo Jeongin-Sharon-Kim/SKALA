@@ -1,12 +1,13 @@
 @import './base.css';
+@import url('https://fonts.google.com/specimen/Gowun+Batang?lang=ko_Kore&preview.lang=ko_Kore');
 
 #app {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
+  font-family: 'Gowun Batang', serif;
 }
-
 a,
 .green {
   text-decoration: none;

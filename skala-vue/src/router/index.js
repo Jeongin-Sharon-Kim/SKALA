@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import CurrentLocationView from '@/views/CurrentLocationView.vue'
 
 // Lazy Loading 방식으로 페이지 불러오기
 const WeatherHomeView = () => import('../views/WeatherHomeView.vue')
@@ -16,6 +17,11 @@ const routes = [
     path: '/about',
     name: 'about',
     component: WeatherAboutView,
+  },
+  {
+    path: '/current-location',
+    name: 'current-location',
+    component: CurrentLocationView,
   },
   {
     // id 값에 따라 다른 도시 상세 페이지 표시

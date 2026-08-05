@@ -5,17 +5,17 @@ import PropsEmitsChild from './PropsEmitsChild.vue'
 const message = ref('Parent가 보유한 초기 데이터')
 // 하위 컴포넌트의 커스텀 이벤트를 수신했을 때 실행될 핸들러 함수
 const handleUpdateRequest = (newValue) => {
-message.value = newValue
+  message.value = newValue
 }
 </script>
 
 <template>
-<div class="parent-container">
-<h2>📡 상위 컴포넌트 (Parent)</h2>
-<p>
-현재 로컬 데이터(State): <strong>{{ message }}</strong>
-</p>
-<hr />
-<PropsEmitsChild :parent-data="message" @update-request="handleUpdateRequest" />
-</div>
+  <div class="parent-container">
+    <h2>📡 상위 컴포넌트 (Parent)</h2>
+    <p>
+      현재 로컬 데이터(State): <strong>{{ message }}</strong>
+    </p>
+    <hr />
+    <PropsEmitsChild :parent-data="message" @update-request="handleUpdateRequest" />
+  </div>
 </template>

@@ -1,27 +1,25 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
 import UnitToggler from './components/exercise/UnitToggler.vue'
-
 </script>
 
 <template>
   <div class="app">
     <header class="header">
-      <h1>🌤️ 오늘의 날씨</h1>
+      <h1>🌤️ 매일의 날씨</h1>
 
-      <!-- 메뉴와 단위 변경 버튼을 같은 줄에 배치 -->
       <div class="top-bar">
         <nav class="nav">
-          <RouterLink to="/">
-            🌤️ 날씨 대시보드
-          </RouterLink>
+          <RouterLink to="/"> 🌤️ 날씨 대시보드 </RouterLink>
 
-          <RouterLink to="/about">
-            ℹ️ 서비스 소개
-          </RouterLink>
+          <RouterLink to="/current-location"> 📍 내 위치 날씨 </RouterLink>
+
+          <RouterLink to="/about"> ℹ️ 서비스 소개 </RouterLink>
         </nav>
 
-        <UnitToggler />
+        <div class="unit-area">
+          <UnitToggler />
+        </div>
       </div>
     </header>
 
@@ -32,13 +30,19 @@ import UnitToggler from './components/exercise/UnitToggler.vue'
 </template>
 
 <style>
-/* 전체 공통 스타일 */
 * {
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#app {
+  width: 100%;
+  min-height: 100%;
   margin: 0;
+}
+
+body {
   min-width: 320px;
   background-color: #f4f7fb;
   color: #263238;
@@ -65,50 +69,92 @@ a {
   background-color: rgb(251, 249, 209);
 }
 
-/* 제목과 메뉴 영역 */
+/* 전체 상단 영역 */
 .header {
-  width: 500px;
+  width: calc(100% - 40px);
+  max-width: 1400px;
   margin: 25px auto 0;
 }
 
 .header h1 {
-  margin: 0 0 15px;
-  font-size: 22px;
+  margin: 0 0 20px;
+  font-size: 32px;
 }
 
-/* 메뉴와 단위 설정을 같은 줄에 배치 */
+/* 메뉴와 온도 토글러를 한 줄에 배치 */
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 30px;
+  width: 100%;
   border-bottom: 1px solid #dce4ec;
 }
 
-/* 왼쪽 메뉴 */
+/* 메뉴 영역 */
 .nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  min-width: 0;
 }
 
-/* 상세보기 */
 .nav a {
-  padding: 10px 8px;
+  padding: 12px 10px;
   color: #7b8794;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
+  white-space: nowrap;
   border-bottom: 3px solid transparent;
 }
 
-/* 현재 선택된 메뉴 */
 .nav a.router-link-exact-active {
   color: #2196f3;
   border-bottom-color: #2196f3;
 }
 
-/* 현재 Router 페이지 */
+/* 온도 토글러가 줄어들거나 아래로 내려가지 않게 함 */
+.unit-area {
+  flex-shrink: 0;
+  padding-bottom: 8px;
+}
+
+/* 페이지 출력 영역 */
 .main {
-  width: 550px;
+  width: 100%;
   margin: 15px auto 30px;
+}
+
+/* 작은 화면에서만 세로 배치 */
+@media (max-width: 700px) {
+  .header {
+    width: calc(100% - 24px);
+    margin-top: 15px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+  }
+
+  .top-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+
+  .nav {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .nav a {
+    padding: 10px 6px;
+    font-size: 14px;
+  }
+
+  .unit-area {
+    padding-bottom: 0;
+  }
 }
 </style>

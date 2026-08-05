@@ -4,25 +4,26 @@ const username = ref('홍길동')
 const age = ref(20)
 const logMessage = ref('대기 중...')
 watchEffect(() => {
-logMessage.value = `[자동 감지] 이름: ${username.value} / 나이: ${age.value}세`
-console.log('🤖 watchEffect가 내부 변수 변경을 감지하여 실행되었습니다.')
+  logMessage.value = `[자동 감지] 이름: ${username.value} / 나이: ${age.value}세`
+  console.log('🤖 watchEffect가 내부 변수 변경을 감지하여 실행되었습니다.')
 })
 </script>
 <template>
-<div style="padding: 20px">
-<h2>10. 자동 감시자 watchEffect()의 특징</h2>
-<hr />
-<div class="box">
-<h3>👨‍💻 데이터 제어판</h3>
-<p>이름: {{ username }} / 나이: {{ age }}세</p>
-<button @click="username =
-'이순신'">이름을'이순신'으로 변경</button> &nbsp;
-<button @click="age++">나이 한 살 추가 (age++)</button>
-</div>
-<div class="box monitor">
-<h3>👁️‍🗨️ watchEffect 자동 모니터링 시스템</h3>
-<p>{{ logMessage }}</p>
-<small style="color: gray">※ 새로고침하자마자 버튼을 안 눌러도 로그가 이미 찍혀있는 특징을 주목하세요!</small>
-</div>
-</div>
+  <div style="padding: 20px">
+    <h2>10. 자동 감시자 watchEffect()의 특징</h2>
+    <hr />
+    <div class="box">
+      <h3>👨‍💻 데이터 제어판</h3>
+      <p>이름: {{ username }} / 나이: {{ age }}세</p>
+      <button @click="username = '이순신'">이름을'이순신'으로 변경</button> &nbsp;
+      <button @click="age++">나이 한 살 추가 (age++)</button>
+    </div>
+    <div class="box monitor">
+      <h3>👁️‍🗨️ watchEffect 자동 모니터링 시스템</h3>
+      <p>{{ logMessage }}</p>
+      <small style="color: gray"
+        >※ 새로고침하자마자 버튼을 안 눌러도 로그가 이미 찍혀있는 특징을 주목하세요!</small
+      >
+    </div>
+  </div>
 </template>
