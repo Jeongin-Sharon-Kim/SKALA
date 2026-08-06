@@ -14,8 +14,18 @@
 """
 
 import asyncio
+import csv
+import json
 import httpx
+import pandas as pd
+
+from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError
+
+
+BASE_DIR = Path(__file__).resolve().parent
+OUTPUT_DIR = BASE_DIR / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 async def fetch_json(client, url):
@@ -105,3 +115,44 @@ if __name__ == "__main__":
     print(f"weather: {len(valid_weather)} valid / {len(errors_weather)} errors")
     print(f"country: {len(valid_country)} valid / {len(errors_country)} errors")
     print(f"ip_info: {len(valid_ip)} valid / {len(errors_ip)} errors")
+
+
+# 결과 파일 경로
+valid_path = fetch_json / "valid_weather.csv"
+errors_path = fetch_json / "errors.json"
+
+
+# 정상 데이터 CSV 저장
+with open(
+    valid_path,
+    "w",
+    encoding="utf-8-sig",
+    newline=""
+) as file:
+    fieldnames = ["month", "region", "amount", "category"]
+
+    writer = csv.DictWriter(
+        file,
+        fieldnames=fieldnames
+    )
+
+    writer.writeheader()
+    writer.writerows(valid)
+
+
+# 오류 데이터 JSON 저장
+with open(
+    errors_path,
+    "w",
+    encoding="utf-8"
+) as file:
+    json.dump(
+        errors,
+        file,
+        ensure_ascii=False,
+        indent=2
+    )
+
+
+print("valid_sales.csv 저장 완료")
+print("errors.json 저장 완료")
