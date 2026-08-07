@@ -2,55 +2,62 @@
 ====================
 [종합 실습] P284 김정인 (2026-08-06)
 1. 비동기 수집
-- asyncio + httpx를 사용해 위 3개 API를 동시에 수집하는 파이프라인 작성
-(asyncio.gather() 활용)
+- asyncio + httpx를 사용해 3개 API를 동시에 수집
+- asyncio.gather() 활용
+
 2. 스키마 검증
-- 수집한 JSON에서 필요한 필드를 추출하여 Pydantic v2 모델로 타입·범위 검증
+- 수집한 JSON에서 필요한 필드를 추출
+- Pydantic v2 모델로 타입과 범위 검증
+
 3. 저장 및 성능 비교
-- 검증 통과한 데이터를 CSV와 Parquet 두 형식으로 저장하고 읽기/쓰기 시간 측정·비교
+- 검증을 통과한 데이터를 CSV와 Parquet 형식으로 저장
+- 읽기 및 쓰기 시간을 측정하여 비교
+
 4. 테스트 및 Git 커밋
-- pytest로 스키마 검증 테스트 작성, ruff로 코드 스타일 검사 결과 정리
-=====================
+- pytest로 스키마 검증 테스트 작성
+- ruff로 코드 스타일 검사
+====================
 """
 
 import asyncio
-import csv
-import json
+import time
+from pathlib import Path
+
 import httpx
 import pandas as pd
-
-from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError
-
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
+# API 요청 후 JSON 반환
 async def fetch_json(client, url):
     response = await client.get(url)
     response.raise_for_status()
     return response.json()
 
-#api 3개 동시에 받기
+
+# API 3개 동시 호출
 async def collect_all():
     weather_url = "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&hourly=temperature_2m,precipitation_probability&forecast_days=3&timezone=Asia/Seoul"
     country_url = "https://countries.dev/alpha/KOR"
     ip_url = "http://ip-api.com/json/8.8.8.8"
+    
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=20.0) as client:
         weather, country, ip_info = await asyncio.gather(
             fetch_json(client, weather_url),
             fetch_json(client, country_url),
-            fetch_json(client, ip_url)
+            fetch_json(client, ip_url),
         )
 
+    print("API 호출 성공!")
     return weather, country, ip_info
 
 
-#####################Pydantic 모델########################
-
+# Pydantic 모델
 class WeatherRecord(BaseModel):
     time: str
     temperature: float = Field(ge=-50, le=60)
@@ -72,87 +79,158 @@ class IpRecord(BaseModel):
     isp: str
 
 
-###타입 오류시 예외 처리####
+# Pydantic 검증
 def validate_records(model, rows):
-    valid, errors = [], []
-    for row in rows:  # rows의 각 행(dict)을 하나씩 model로 검증
+    valid = []
+    errors = []
+
+    for row in rows:
         try:
             record = model(**row)
-
-            # 검증 성공 데이터
             valid.append(record.model_dump())
 
         except ValidationError as error:
-            # 검증 실패 내용 출력
             print("\n검증 오류 내용:")
             print(error)
 
-            # 실패한 원본 행과 오류 내용 저장
-            errors.append({
-                "row": row,
-                "error": error.errors()
-            })
+            errors.append(
+                {
+                    "row": row,
+                    "error": error.errors(),
+                }
+            )
+
     return valid, errors
 
 
-if __name__ == "__main__":
+# CSV와 Parquet 저장 및 성능 비교
+def save_and_compare(records, file_name):
+    """검증된 데이터를 CSV와 Parquet로 저장하고 성능 비교"""
+
+    if not records:
+        print(f"{file_name}: 저장할 데이터가 없습니다.")
+        return
+
+    dataframe = pd.DataFrame(records)
+
+    csv_path = OUTPUT_DIR / f"{file_name}.csv"
+    parquet_path = OUTPUT_DIR / f"{file_name}.parquet"
+
+    # CSV 쓰기 시간
+    start = time.perf_counter()
+
+    dataframe.to_csv(
+        csv_path,
+        index=False,
+        encoding="utf-8-sig",
+    )
+
+    csv_write_time = time.perf_counter() - start
+
+    # Parquet 쓰기 시간
+    start = time.perf_counter()
+
+    dataframe.to_parquet(
+        parquet_path,
+        index=False,
+    )
+
+    parquet_write_time = time.perf_counter() - start
+
+    # CSV 읽기 시간
+    start = time.perf_counter()
+    csv_reloaded = pd.read_csv(csv_path)
+    csv_read_time = time.perf_counter() - start
+
+    # Parquet 읽기 시간
+    start = time.perf_counter()
+    parquet_reloaded = pd.read_parquet(parquet_path)
+    parquet_read_time = time.perf_counter() - start
+
+    print(f"\n[{file_name} 저장 및 성능 비교]")
+    print(f"CSV 쓰기 시간: {csv_write_time:.6f}초")
+    print(f"Parquet 쓰기 시간: {parquet_write_time:.6f}초")
+    print(f"CSV 읽기 시간: {csv_read_time:.6f}초")
+    print(f"Parquet 읽기 시간: {parquet_read_time:.6f}초")
+
+    print(f"CSV 재로딩 건수: {len(csv_reloaded)}")
+    print(f"Parquet 재로딩 건수: {len(parquet_reloaded)}")
+
+    assert len(csv_reloaded) == len(records)
+    assert len(parquet_reloaded) == len(records)
+
+    print("저장 및 재로딩 검증 완료")
+
+def main():
     weather, country, ip_info = asyncio.run(collect_all())
 
-    # open-meteo는 hourly 배열들을 따로 주기 때문에 행 단위로 묶어줌
+    # Open-Meteo 응답을 행 단위 데이터로 변환
     weather_rows = [
-        {"time": t, "temperature": temp, "precipitation_probability": precip}
-        for t, temp, precip in zip(
+        {
+            "time": time_value,
+            "temperature": temperature,
+            "precipitation_probability": precipitation,
+        }
+        for time_value, temperature, precipitation in zip(
             weather["hourly"]["time"],
             weather["hourly"]["temperature_2m"],
             weather["hourly"]["precipitation_probability"],
         )
     ]
 
-    valid_weather, errors_weather = validate_records(WeatherRecord, weather_rows)
-    valid_country, errors_country = validate_records(CountryRecord, [country])
-    valid_ip, errors_ip = validate_records(IpRecord, [ip_info])
+    # 국가 API 응답에서 필요한 필드 추출
+    country_row = {
+        "name": country["name"],
+        "capital": country["capital"],
+        "region": country["region"],
+        "population": country["population"],
+    }
 
-    print(f"weather: {len(valid_weather)} valid / {len(errors_weather)} errors")
-    print(f"country: {len(valid_country)} valid / {len(errors_country)} errors")
-    print(f"ip_info: {len(valid_ip)} valid / {len(errors_ip)} errors")
+    # IP API 응답에서 필요한 필드 추출
+    ip_row = {
+        "country": ip_info["country"],
+        "city": ip_info["city"],
+        "lat": ip_info["lat"],
+        "lon": ip_info["lon"],
+        "isp": ip_info["isp"],
+    }
 
-
-# 결과 파일 경로
-valid_path = fetch_json / "valid_weather.csv"
-errors_path = fetch_json / "errors.json"
-
-
-# 정상 데이터 CSV 저장
-with open(
-    valid_path,
-    "w",
-    encoding="utf-8-sig",
-    newline=""
-) as file:
-    fieldnames = ["month", "region", "amount", "category"]
-
-    writer = csv.DictWriter(
-        file,
-        fieldnames=fieldnames
+    # Pydantic 검증
+    valid_weather, errors_weather = validate_records(
+        WeatherRecord,
+        weather_rows,
     )
 
-    writer.writeheader()
-    writer.writerows(valid)
-
-
-# 오류 데이터 JSON 저장
-with open(
-    errors_path,
-    "w",
-    encoding="utf-8"
-) as file:
-    json.dump(
-        errors,
-        file,
-        ensure_ascii=False,
-        indent=2
+    valid_country, errors_country = validate_records(
+        CountryRecord,
+        [country_row],
     )
 
+    valid_ip, errors_ip = validate_records(
+        IpRecord,
+        [ip_row],
+    )
 
-print("valid_sales.csv 저장 완료")
-print("errors.json 저장 완료")
+    print(
+        f"weather: {len(valid_weather)} valid / "
+        f"{len(errors_weather)} errors"
+    )
+    print(
+        f"country: {len(valid_country)} valid / "
+        f"{len(errors_country)} errors"
+    )
+    print(
+        f"ip_info: {len(valid_ip)} valid / "
+        f"{len(errors_ip)} errors"
+    )
+
+    # CSV 및 Parquet 저장과 성능 비교
+    save_and_compare(valid_weather, "weather")
+    save_and_compare(valid_country, "country")
+    save_and_compare(valid_ip, "ip_info")
+
+
+# pipeline.py 파일을 직접 실행한 경우에만 main() 실행
+# test_pipeline.py에서 import할 때는 자동 실행되지 않음
+if __name__ == "__main__":
+    main()
