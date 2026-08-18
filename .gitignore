@@ -14,3 +14,26 @@ __pycache__/
 # Jupyter 임시 파일
 .ipynb_checkpoints/
 EOF
+
+
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IntelliJ
+.idea/
+**/.idea/
+*.iml
+
+# VS Code
+.vscode/
+**/.vscode/
+
+# Java / Maven
+target/
+**/target/
+*.class
+
+# Logs
+*.log
