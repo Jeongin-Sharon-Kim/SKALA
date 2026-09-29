@@ -39,7 +39,7 @@ const routes = [
 
 const router = createRouter({
   // 일반적인 URL 형식 사용
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
 
   routes,
 
